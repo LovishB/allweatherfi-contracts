@@ -9,19 +9,19 @@ contract AllWeatherEscrow {
     State Variables
     */
     uint256 public latestNav;
-    uint256[4] public latestPrices;
+    uint256[3] public latestPrices;
     address public owner;
-    uint256[4] public targetWeights;
+    uint256[3] public targetWeights;
     AllWeatherPriceOracle public immutable PRICE_ORACLE;
 
     /**
     Events
     */
-    event BuyRequested(address indexed user, uint256 amountEth, uint256[4] prices);
-    event SellRequested(address indexed user, uint256 amountEtf, uint256[4] prices);
+    event BuyRequested(address indexed user, uint256 amountEth, uint256[3] prices);
+    event SellRequested(address indexed user, uint256 amountEtf, uint256[3] prices);
     event NavUpdated(uint256 newNav);
     event WithdrawExecuted(address indexed user, uint256 payoutEth);
-    event TargetWeightsUpdated(uint256[4] newWeights);
+    event TargetWeightsUpdated(uint256[3] newWeights);
     event PriceUpdateFailed(string reason);
 
     /**
@@ -54,11 +54,11 @@ contract AllWeatherEscrow {
         require(msg.value > updateFee, "Insufficient ETH for price update and purchase");
         
         // Update prices through the oracle
-        PythStructs.Price[4] memory prices;
-        try PRICE_ORACLE.updateAndGetPrices{value: updateFee}(priceUpdateData) returns (PythStructs.Price[4] memory updatedPrices) {
+        PythStructs.Price[3] memory prices;
+        try PRICE_ORACLE.updateAndGetPrices{value: updateFee}(priceUpdateData) returns (PythStructs.Price[3] memory updatedPrices) {
             prices = updatedPrices;
             // Store the raw price values for compatibility with events
-            for (uint i = 0; i < 4; i++) {
+            for (uint i = 0; i < 3; i++) {
                 latestPrices[i] = uint256(uint64(prices[i].price));
             }
         } catch Error(string memory reason) {
@@ -87,11 +87,11 @@ contract AllWeatherEscrow {
         require(msg.value >= updateFee, "Insufficient ETH for price update");
         
         // Update prices through the oracle
-        PythStructs.Price[4] memory prices;
-        try PRICE_ORACLE.updateAndGetPrices{value: updateFee}(priceUpdateData) returns (PythStructs.Price[4] memory updatedPrices) {
+        PythStructs.Price[3] memory prices;
+        try PRICE_ORACLE.updateAndGetPrices{value: updateFee}(priceUpdateData) returns (PythStructs.Price[3] memory updatedPrices) {
             prices = updatedPrices;
             // Store the raw price values for compatibility with events
-            for (uint i = 0; i < 4; i++) {
+            for (uint i = 0; i < 3; i++) {
                 latestPrices[i] = uint256(uint64(prices[i].price));
             }
         } catch Error(string memory reason) {
@@ -117,10 +117,10 @@ contract AllWeatherEscrow {
 
     /**
      * @notice Owner updates the target asset allocation weights
-     * @param newWeights Array of 4 uint256 representing new target weights for [S&P, Bonds, Gold, Oil]
+     * @param newWeights Array of 3 uint256 representing new target weights for [S&P, Bonds, Gold]
      */
-    function updateTargetWeights(uint256[4] calldata newWeights) external onlyOwner {
-        uint256 sum = newWeights[0] + newWeights[1] + newWeights[2] + newWeights[3];
+    function updateTargetWeights(uint256[3] calldata newWeights) external onlyOwner {
+        uint256 sum = newWeights[0] + newWeights[1] + newWeights[2];
         require(sum == 100, "Target weights must sum to 100");
         
         targetWeights = newWeights;
