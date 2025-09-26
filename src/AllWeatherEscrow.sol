@@ -11,17 +11,15 @@ contract AllWeatherEscrow {
     uint256 public latestNav;
     uint256[3] public latestPrices;
     address public owner;
-    uint256[3] public targetWeights;
     AllWeatherPriceOracle public immutable PRICE_ORACLE;
 
     /**
     Events
     */
-    event BuyRequested(address indexed user, uint256 amountEth, uint256[3] prices);
+    event BuyRequested(address indexed user, uint256 amountEth, uint256[3] prices, uint256[3] weights);
     event SellRequested(address indexed user, uint256 amountEtf, uint256[3] prices);
     event NavUpdated(uint256 newNav);
     event WithdrawExecuted(address indexed user, uint256 payoutEth);
-    event TargetWeightsUpdated(uint256[3] newWeights);
     event PriceUpdateFailed(string reason);
 
     /**
@@ -45,9 +43,14 @@ contract AllWeatherEscrow {
     /**
      * @notice User buys ETF by sending ETH. Updates prices from Pyth and emits BuyRequested event
      * @param priceUpdateData Price update data from Hermes for Pyth price feeds
+     * @param weights Array of 3 uint256 representing allocation weights for [S&P, Bonds, Gold] - must sum to 100
      */
-    function buy(bytes[] calldata priceUpdateData) external payable {
+    function buy(bytes[] calldata priceUpdateData, uint256[3] calldata weights) external payable {
         require(msg.value > 0, "Must send ETH to buy");
+        
+        // Validate weights sum to 100
+        uint256 sum = weights[0] + weights[1] + weights[2];
+        require(sum == 100, "Weights must sum to 100");
         
         // Get the fee required for price update
         uint256 updateFee = PRICE_ORACLE.getUpdateFee(priceUpdateData);
@@ -71,7 +74,7 @@ contract AllWeatherEscrow {
             require(latestPrices[0] > 0, "No valid price data available");
         }
         
-        emit BuyRequested(msg.sender, msg.value - updateFee, latestPrices);
+        emit BuyRequested(msg.sender, msg.value - updateFee, latestPrices, weights);
     }
 
     /**
@@ -113,18 +116,6 @@ contract AllWeatherEscrow {
     function updateLatestNav(uint256 newNav) external onlyOwner {
         latestNav = newNav;
         emit NavUpdated(newNav);
-    }
-
-    /**
-     * @notice Owner updates the target asset allocation weights
-     * @param newWeights Array of 3 uint256 representing new target weights for [S&P, Bonds, Gold]
-     */
-    function updateTargetWeights(uint256[3] calldata newWeights) external onlyOwner {
-        uint256 sum = newWeights[0] + newWeights[1] + newWeights[2];
-        require(sum == 100, "Target weights must sum to 100");
-        
-        targetWeights = newWeights;
-        emit TargetWeightsUpdated(newWeights);
     }
 
     /**
