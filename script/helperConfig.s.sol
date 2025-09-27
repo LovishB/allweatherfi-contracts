@@ -15,18 +15,18 @@ contract HelperConfig is Script {
     }
 
     constructor() {
-        if (block.chainid == 84532) {
-            activeNetworkConfig = getBaseSepoliaConfig();
+        if(block.chainid == 295) {
+            activeNetworkConfig = getHederaTestnetConfig();
         } else {
             activeNetworkConfig = getAnvilConfig();
         }
     }
 
-    function getBaseSepoliaConfig() public view returns (NetworkConfig memory) {
+    function getHederaTestnetConfig() public view returns (NetworkConfig memory) {
         return NetworkConfig({
             deployerPrivateKey: vm.envUint("PRIVATE_KEY"),
-            rpcUrl: vm.envString("BASE_SEPOLIA_RPC_URL"),
-            pythContract: 0xA2aa501b19aff244D90cc15a4Cf739D2725B5729 // Pyth contract on Base Sepolia
+            rpcUrl: vm.envString("HEDERA_TESTNET_RPC_URL"),
+            pythContract: 0xA2aa501b19aff244D90cc15a4Cf739D2725B5729 // Pyth contract on Hedera Testnet
         });
     }
 

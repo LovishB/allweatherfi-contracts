@@ -8,18 +8,16 @@ contract AllWeatherEscrow {
     /** 
     State Variables
     */
-    uint256 public latestNav;
-    uint256[3] public latestPrices;
+    uint256[4] public latestPrices;
     address public owner;
     AllWeatherPriceOracle public immutable PRICE_ORACLE;
 
     /**
     Events
     */
-    event BuyRequested(address indexed user, uint256 amountEth, uint256[3] prices, uint256[3] weights);
-    event SellRequested(address indexed user, uint256 amountEtf, uint256[3] prices);
-    event NavUpdated(uint256 newNav);
-    event WithdrawExecuted(address indexed user, uint256 payoutEth);
+    event BuyRequested(address indexed user, uint256 amountHbar, uint256[4] prices, uint256[3] weights);
+    event SellRequested(address indexed user, uint256 amountHbar, uint256[4] prices);
+    event WithdrawExecuted(address indexed user, uint256 payoutHbar);
     event PriceUpdateFailed(string reason);
 
     /**
@@ -54,68 +52,56 @@ contract AllWeatherEscrow {
         
         // Get the fee required for price update
         uint256 updateFee = PRICE_ORACLE.getUpdateFee(priceUpdateData);
-        require(msg.value > updateFee, "Insufficient ETH for price update and purchase");
+        require(address(this).balance >= updateFee, "Insufficient contract balance for price update");
         
         // Update prices through the oracle
-        PythStructs.Price[3] memory prices;
-        try PRICE_ORACLE.updateAndGetPrices{value: updateFee}(priceUpdateData) returns (PythStructs.Price[3] memory updatedPrices) {
+        PythStructs.Price[4] memory prices;
+        try PRICE_ORACLE.updateAndGetPrices(priceUpdateData) returns (PythStructs.Price[4] memory updatedPrices) {
             prices = updatedPrices;
             // Store the raw price values for compatibility with events
-            for (uint i = 0; i < 3; i++) {
+            for (uint i = 0; i < 4; i++) {
                 latestPrices[i] = uint256(uint64(prices[i].price));
             }
         } catch Error(string memory reason) {
             emit PriceUpdateFailed(reason);
-            // Fallback to last known prices if available
-            require(latestPrices[0] > 0, "No valid price data available");
+            // Fallback to last known prices
         } catch {
             emit PriceUpdateFailed("Unknown error during price update");
-            // Fallback to last known prices if available
-            require(latestPrices[0] > 0, "No valid price data available");
+            // Fallback to last known prices
         }
         
-        emit BuyRequested(msg.sender, msg.value - updateFee, latestPrices, weights);
+        emit BuyRequested(msg.sender, msg.value, latestPrices, weights);
     }
 
     /**
      * @notice User sells ETF by specifying token amount. Updates prices from Pyth and emits SellRequested event
-     * @param amountEtf Amount of ETF tokens to sell
+     * @param amountHbar Amount of ETF tokens to sell
      * @param priceUpdateData Price update data from Hermes for Pyth price feeds
      */
-    function sell(uint256 amountEtf, bytes[] calldata priceUpdateData) external payable {
-        require(amountEtf > 0, "Amount must be greater than 0");
+    function sell(uint256 amountHbar, bytes[] calldata priceUpdateData) external payable {
+        require(amountHbar > 0, "Amount must be greater than 0");
         
         // Get the fee required for price update
         uint256 updateFee = PRICE_ORACLE.getUpdateFee(priceUpdateData);
-        require(msg.value >= updateFee, "Insufficient ETH for price update");
+        require(address(this).balance >= updateFee, "Insufficient contract balance for price update");
         
         // Update prices through the oracle
-        PythStructs.Price[3] memory prices;
-        try PRICE_ORACLE.updateAndGetPrices{value: updateFee}(priceUpdateData) returns (PythStructs.Price[3] memory updatedPrices) {
+        PythStructs.Price[4] memory prices;
+        try PRICE_ORACLE.updateAndGetPrices(priceUpdateData) returns (PythStructs.Price[4] memory updatedPrices) {
             prices = updatedPrices;
             // Store the raw price values for compatibility with events
-            for (uint i = 0; i < 3; i++) {
+            for (uint i = 0; i < 4; i++) {
                 latestPrices[i] = uint256(uint64(prices[i].price));
             }
         } catch Error(string memory reason) {
             emit PriceUpdateFailed(reason);
             // Fallback to last known prices if available
-            require(latestPrices[0] > 0, "No valid price data available");
         } catch {
             emit PriceUpdateFailed("Unknown error during price update");
             // Fallback to last known prices if available
-            require(latestPrices[0] > 0, "No valid price data available");
         }
         
-        emit SellRequested(msg.sender, amountEtf, latestPrices);
-    }
-
-    /**
-     * @notice Owner updates the latest NAV
-     */
-    function updateLatestNav(uint256 newNav) external onlyOwner {
-        latestNav = newNav;
-        emit NavUpdated(newNav);
+        emit SellRequested(msg.sender, amountHbar, latestPrices);
     }
 
     /**
