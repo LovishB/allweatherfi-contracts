@@ -13,7 +13,13 @@
     "oracle:fee": "node scripts/interact.js fee",
     "oracle:info": "node scripts/interact.js info",
     "oracle:network": "node scripts/interact.js network",
-    "oracle:help": "node scripts/interact.js help"
+    "oracle:help": "node scripts/interact.js help",
+    "escrow:buy": "node scripts/interact-escrow.js buy",
+    "escrow:sell": "node scripts/interact-escrow.js sell",
+    "escrow:withdraw": "node scripts/interact-escrow.js withdraw",
+    "escrow:info": "node scripts/interact-escrow.js info",
+    "escrow:topup": "node scripts/interact-escrow.js topup",
+    "escrow:help": "node scripts/interact-escrow.js help"
   },
   "repository": {
     "type": "git",

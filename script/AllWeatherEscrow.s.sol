@@ -19,8 +19,8 @@ contract AllWeatherEscrowScript is Script {
         console.log("AllWeatherPriceOracle deployed at:", address(oracle));
         
         // Deploy the escrow contract with oracle address
-        // AllWeatherEscrow escrow = new AllWeatherEscrow(address(oracle));
-        // console.log("AllWeatherEscrow deployed at:", address(escrow));
+        AllWeatherEscrow escrow = new AllWeatherEscrow(payable(address(oracle)));
+        console.log("AllWeatherEscrow deployed at:", address(escrow));
 
         vm.stopBroadcast();
     }

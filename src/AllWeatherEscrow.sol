@@ -127,4 +127,22 @@ contract AllWeatherEscrow {
     function getAum() external view returns (uint256) {
         return address(this).balance;
     }
+
+    /**
+     * @notice Receive function to accept HBAR transfers
+     * @dev Called when HBAR is sent to the contract with empty calldata
+     */
+    receive() external payable {
+        // Accept HBAR transfers - no additional logic needed
+        // The contract needs HBAR to pay for Pyth oracle update fees
+    }
+
+    /**
+     * @notice Fallback function to accept HBAR transfers with calldata
+     * @dev Called when HBAR is sent to the contract with calldata that doesn't match any function
+     */
+    fallback() external payable {
+        // Accept HBAR transfers with calldata - no additional logic needed
+        // The contract needs HBAR to pay for Pyth oracle update fees
+    }
 }
