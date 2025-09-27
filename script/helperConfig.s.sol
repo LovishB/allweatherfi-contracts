@@ -15,7 +15,7 @@ contract HelperConfig is Script {
     }
 
     constructor() {
-        if(block.chainid == 295) {
+        if(block.chainid == 296) {
             activeNetworkConfig = getHederaTestnetConfig();
         } else {
             activeNetworkConfig = getAnvilConfig();

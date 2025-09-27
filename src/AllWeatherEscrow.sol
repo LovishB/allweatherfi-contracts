@@ -28,7 +28,7 @@ contract AllWeatherEscrow {
         _;
     }
 
-    constructor(address _priceOracle) {
+    constructor(address payable _priceOracle) {
         require(_priceOracle != address(0), "Invalid price oracle address");
         owner = msg.sender;
         PRICE_ORACLE = AllWeatherPriceOracle(_priceOracle);

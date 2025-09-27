@@ -25,3 +25,12 @@ deploy-base-sepolia:
 	--verify \
 	--etherscan-api-key $(BASESCAN_API_KEY) \
 	-vvvv
+
+# Deploy to Hedera Testnet
+deploy-hedera-testnet:
+	@forge script script/AllWeatherEscrow.s.sol:AllWeatherEscrowScript \
+	--rpc-url $(HEDERA_TESTNET_RPC_URL) \
+	--private-key $(PRIVATE_KEY) \
+	--broadcast \
+	--chain-id 296 \
+	-vvvv

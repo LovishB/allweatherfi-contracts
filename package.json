@@ -7,7 +7,13 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "oracle:current": "node scripts/interact.js current",
+    "oracle:update": "node scripts/interact.js update",
+    "oracle:fee": "node scripts/interact.js fee",
+    "oracle:info": "node scripts/interact.js info",
+    "oracle:network": "node scripts/interact.js network",
+    "oracle:help": "node scripts/interact.js help"
   },
   "repository": {
     "type": "git",
@@ -21,6 +27,9 @@
   },
   "homepage": "https://github.com/LovishB/allweather-contracts#readme",
   "dependencies": {
-    "@pythnetwork/pyth-sdk-solidity": "^4.2.0"
+    "@pythnetwork/hermes-client": "^2.0.0",
+    "@pythnetwork/pyth-sdk-solidity": "^4.2.0",
+    "dotenv": "^17.2.2",
+    "ethers": "^6.15.0"
   }
 }
